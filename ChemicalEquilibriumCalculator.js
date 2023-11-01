@@ -17,6 +17,7 @@ class ChemicalEquilibriumCalculator {
      */
     static Chemical = class {
         #stoichiometry;
+        #formula;
         #activity;
         #isParticipant;
         #isReactant;
@@ -25,6 +26,8 @@ class ChemicalEquilibriumCalculator {
           * Creates a ChemicalEquilibriumCalculator.Chemical object
           * @param {Number} stoichiometry
           * Stoichiometry of ChemicalEquilibriumCalculator.Chemical object in a chemical rection
+          * @param {String} formula
+          * Formula of ChemicalEquilibriumCalculator.Chemical object in a chemical rection
           * @param {Number} activity
           * Activity/concentration of ChemicalEquilibriumCalculator.Chemical object in a chemical reaction
           * @param {boolean} isParticipant
@@ -33,10 +36,11 @@ class ChemicalEquilibriumCalculator {
           * @param {boolean} isReactant
           * A flag that indicates if the ChemicalEquilibriumCalculator.Chemical object is a reactant, set "true" if the chemical is a product set "false".  
           */
-        constructor(stoichiometry, activity, isParticipant, isReactant) {
+        constructor(stoichiometry, formula, activity, isParticipant, isReactant) {
             if (!ChemicalEquilibriumCalculator.#privateConstructing)
                 throw new Error(`${ChemicalEquilibriumCalculator.Chemical.name} is not constructible!`);
             this.#stoichiometry = stoichiometry;
+            this.#formula = formula;
             this.#activity = activity;
             this.#isParticipant = isParticipant;
             this.#isReactant = isReactant;
@@ -138,7 +142,6 @@ class ChemicalEquilibriumCalculator {
     */
     #forwardReaction;
 
-
     /** 
      * @class
      * Creates a Chemical Equilibrium Calculator 
@@ -151,9 +154,6 @@ class ChemicalEquilibriumCalculator {
         this.#chemicals = chemicals;
         this.#equilibriumConstant = equilibriumConstant;
     }
-
-
-
 
     /**
      * @method
@@ -230,6 +230,8 @@ class ChemicalEquilibriumCalculator {
      * Static contructor for ChemicalEquilibriumCalculator.Chemical objects
      * @param {Number} stoichiometry
      * Stoichiometry of ChemicalEquilibriumCalculator.Chemical object in a chemical rection
+     * @param {String} formula
+     * Formula of ChemicalEquilibriumCalculator.Chemical object in a chemical rection
      * @param {Number} activity
      * Activity/concentration of ChemicalEquilibriumCalculator.Chemical object in a chemical reaction
      * @param {boolean} isParticipant
@@ -238,17 +240,19 @@ class ChemicalEquilibriumCalculator {
      * @param {boolean} isReactant
      * A flag that indicates if the ChemicalEquilibriumCalculator.Chemical object is a reactant, set "true" if the chemical is a product set "false".  
      */
-    static createChemical(stoichiometry, activity, isParticipant, isReactant) {
-        if (typeof (stoichiometry) != "number" || isNaN(stoichiometry))
+    static createChemical(stoichiometry, formula, activity, isParticipant, isReactant) {
+        if (typeof stoichiometry != "number" || isNaN(stoichiometry))
             throw new Error("stoichiometry must be a number!");
-        if (typeof (activity) != "number" || isNaN(activity))
+        if (typeof formula != "string")
+            throw new Error("formula must be a string!");
+        if (typeof activity != "number" || isNaN(activity))
             throw new Error("activity must be a number!");
-        if (typeof (isParticipant) != "boolean")
+        if (typeof isParticipant != "boolean")
             throw new Error("isParticipant must be a boolean!");
-        if (typeof (isReactant) != "boolean")
+        if (typeof isReactant != "boolean")
             throw new Error("isReactant must be a boolean!");
         this.#privateConstructing = true;
-        return new ChemicalEquilibriumCalculator.Chemical(stoichiometry, activity, isParticipant, isReactant)
+        return new ChemicalEquilibriumCalculator.Chemical(stoichiometry, formula, activity, isParticipant, isReactant)
     }
 
 
