@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+            font-size: 1.1rem;
+        }
+
+        .hide {
+            display: none;
+        }
+        main {
+            width: 90%;
+            margin: auto;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        form {
+            border: 1px solid black;
+            border-radius: 10px;
+            padding: 10px;
+            width: 70%;
+            margin: 10px auto;
+        }
+
+        .row {
+            display: flex;
+            padding: 10px;
+        }
+
+        input {
+            width: 200px;
+            padding: 12px 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            text-align: center;
+            border: 0;
+            border-bottom: 2px solid black;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        #eq-const {
+            width: 80px;
+        }
+
+        .input-error {
+            border: 0;
+            border-bottom: 2px solid red;
+            color: red;
+        }
+
+        button {
+            margin: 10px;
+            padding: 15px;
+            background-color: lightgoldenrodyellow;
+            border: 1px solid lightslategray;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: lightgray;
+        }
+
+        #output {
+            border: 1px solid black;
+            border-radius: 10px;
+            width: 70%;
+            margin: 10px auto;
+            padding: 15px 10px;
+        }
+
+        .alert {
+            text-align: center;
+            color: red;
+        }
+    </style>
+    <script src="ChemicalEquilibriumCalculator.js"></script>
+    <script>
+        window.addEventListener("load", () => {
+            const eqRegex = /^((\s[+]\s)?((\d+([.]\d+)?))\s\w+[+-]?\s\[\d+([.]\d+)?([e][-]?\d+)?\](\s[*])?)+$/g;
+            const numRegex = /^\d+([.]\d+)?([e][-]?\d+)?$/g;
+            const output = document.getElementById("output");
+            const reactantsEl = document.getElementById("reactants");
+            const productsEl = document.getElementById("products");
+            const constEqEl = document.getElementById("eq-const");
+
+            function checkEqInput(inputEl) {
+                if (inputEl.value.match(eqRegex) == null) {
+                    inputEl.classList.add("input-error");
+                    return false
+                }
+                if (inputEl.classList.contains("input-error")) inputEl.classList.remove("input-error");
+                return true;
+            }
+
+            function checkConstEqInput(inputEl) {
+                if (inputEl.value.match(numRegex) == null) {
+                    inputEl.classList.add("input-error");
+                    return false;
+                }
+                if (inputEl.classList.contains("input-error")) inputEl.classList.remove("input-error");
+                return true;
+            }
+
+            function createChemical(strInfo, isReactant) {
+                const isParticipant = strInfo.indexOf("*") == -1;
+                const data = strInfo.trim().split(" ");
+
+                return ChemicalEquilibriumCalculator.createChemical(
+                    Number(data[0]), data[1], Number(data[2].substring(1, data[2].length - 1)), isParticipant, isReactant
+                )
+            }
+
+            function prepare() {
+                if (!checkEqInput(reactantsEl) || !checkEqInput(productsEl) || !checkConstEqInput(constEqEl))
+                    throw new Error("Search for invalid inputs!");
+                const chemicals = [];
+                const allReactants = reactantsEl.value.split(" + ");
+                const allProducts = productsEl.value.split(" + ");
+                for (let r of allReactants) chemicals.push(createChemical(r, true));
+                for (let p of allProducts) chemicals.push(createChemical(p, false));
+                return [chemicals, constEqEl.value];
+            }
+
+            reactantsEl.addEventListener("input", (e) => {
+                checkReactantsInputValue = checkEqInput(e.target);
+            });
+
+            productsEl.addEventListener("input", (e) => {
+                checkProductsInputValue = checkEqInput(e.target);
+            });
+
+            constEqEl.addEventListener("input", (e) => {
+                checkConstEqInputValue = checkConstEqInput(e.target);
+            });
+
+            document.getElementById("reset").addEventListener("click", (e) => {
+                e.preventDefault();
+                const inputs = document.querySelectorAll("input");
+                inputs.forEach(el => el.value = "");
+            })
+
+            document.getElementById("calc").addEventListener("click", (e) => {
+                e.preventDefault();
+                try {
+                    const [chemicals, equilibriumConstant] = prepare();
+                    const eqCalculator = new ChemicalEquilibriumCalculator(
+                        chemicals, equilibriumConstant
+                    )
+                    if(output.classList.contains("hide")) output.classList.remove("hide");
+                    const result = eqCalculator.calculate();
+                    let strOutput = "In the Equilibrium:\n\n";
+                    for (let c of result.chemicals) 
+                        strOutput += `[${c.getFormula()}] = ${c.getActivity().toExponential(3)}\n`;
+                    strOutput += `\nQ = ${result.reactionQuotient.toExponential(3)}\n\n`;
+                    strOutput += `Calculate cycles = ${result.calculateCycles}\n`
+                    console.log(result);
+                    output.innerText = strOutput;
+
+                } catch (error) {
+                    console.error(error);
+                    if(output.classList.contains("hide")) output.classList.remove("hide");
+                    if(!output.classList.contains("alert")) output.classList.add("alert");
+                    output.innerText = error.message;
+                    setTimeout(() => {
+                        output.classList.add("hide");
+                        output.classList.remove("alert");
+                    }, 2000)
+                }
+
+            })
+        })
+    </script>
+    <title>Chemical Equilibrium Calculator</title>
+</head>
+
+<body>
+    <main>
+        <h2>Chemical Equilibrium Calculator</h2>
+        <form id="ctrl">
+            <div id="reaction">
+                <input type="text" id="reactants"> &#8652;
+                <input type="text" id="products"> K(T) =
+                <input type="text" id="eq-const">
+            </div>
+
+            <button id="calc">Calculate</button>
+            <button id="reset">Reset</button>
+        </form>
+        <div id="output" class="hide"></div>
+
+    </main>
+</body>
+
+</html>
