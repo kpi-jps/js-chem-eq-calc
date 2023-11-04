@@ -78,6 +78,15 @@ class ChemicalEquilibriumCalculator {
         getStoichiometry() {
             return this.#stoichiometry;
         }
+
+        /**
+         * @method
+         * Return the formula parameter
+         * @returns {String}
+         */
+        getFormula() {
+            return this.#formula;
+        }
     }
 
     /** 
